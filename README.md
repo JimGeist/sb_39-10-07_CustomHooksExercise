@@ -1,70 +1,49 @@
-# Getting Started with Create React App
+# sb_39-10-07_CustomHooksExercise
+ 
+## Technology Stack
+- **Front-end**: ReactJS
+- **Back-end**: n/a
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Assignment Details
 
-## Available Scripts
+Practice with writing custom hooks. One hook needed to toggle the `useState` value between `true` and `false`. The second hook needed to handle an api call with Axios.
 
-In the project directory, you can run:
 
-### `npm start`
+### Step One: Read the Code
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+The application presents a deck of regular playing cards on the left and Pokemon characters on the right. The playing card side and Pokemon side are independent of each other, but they will soon share some modules.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+The business logic looks nearly identical between the two applications. Some of the duplicate business logic will get placed into custom hooks.
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Step Two: `useFlip`
 
-### `npm run build`
+Both playing cards and Pokemon cards can get 'flipped' -- or turning the card over to show the back via a toggle between isUp / not isUp (true / false). A `useFlip` custom hook was created to handle the card flip. An initial value can get specified for the `useFlip` and `true` is the default initial value. Both **PlayingCard** and **PokemonCard** components were refactured to use the `useFlip` custom hook. 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Step Three: `useAxios` in _PlayingCardList_
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The **PlayingCardLIst** component initialized a card state to an empty array. When `Add a playing card` button is clicked, a callback function makes an axios.get request to the deck of cards api. The resulting card is added to state and the **PlayingCardLIst** component renders. 
 
-### `npm run eject`
+The useState for the cards and the axios.get call were moved to a `useAxios` custom hook. Now some of the benefits of a custom hook are evident in that fewer components (Axios, useState, UUID) are imported and the business logic in the component was reduced.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Step Four: `useAxios` in _PokeDex_
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+The **PokeDex** component initialized a card state to an empty array. The difference for **PokeDex** is either a random Pokemon character or the selected Pokemon character is added to the Pokemon api url. The SAME `useAxios` custom hook had to get used between both applications. 
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+This is the part where some confusion occurred. The callback function to add / call the api required an argument to hold the Pokemon character name. **PlayingCardList**'s add / call does not require additional parameters and the was not changed in **PlayingCardList** because I felt the new code to support PokeDex should get added without impacting or further requiring a change to 'production code'.
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Further Study: Removing response data
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The 'useAxios' hook was further modified to add a function to remvoe response data / clear state. This change required adding a new button to both **PlayingCardList** and **PokeDex** components. For **PokeDex**, the remove function was then passed as a prop to the child **PokemonSelect** component.
 
-### Code Splitting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Additional Details
 
-### Analyzing the Bundle Size
+**Enhancements**
+- Function descriptors for `useFlip` and `useAxios` were added.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Difficulties**
+- `useAxios`, and even the original code, was odd because of how the response from the API call was used to alter the state. Some logic was added to the 'add' callback to handle the case where no argument is passed in the add callback -- the add from **PlayingCardList**. Again, rather than further changing existing code to accomodate the `useAxios` hook, the hook was adjusted to only use the argument when it contains a string -- the name of the Pokemon character.
